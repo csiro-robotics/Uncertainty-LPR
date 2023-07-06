@@ -1,6 +1,6 @@
 # Uncertainty-Aware Lidar Place Recognition in Novel Environments
 
-This repository contains the code implementation used in the paper [Uncertainty-Aware Lidar Place Recognition in Novel Environments](https://arxiv.org/pdf/2210.01361.pdf) (accepted by ?) [[arXiv]](https://arxiv.org/pdf/2210.01361.pdf).
+This repository contains the code implementation used in the paper [Uncertainty-Aware Lidar Place Recognition in Novel Environments](https://arxiv.org/pdf/2210.01361.pdf) (accepted at IROS2023) [[arXiv]](https://arxiv.org/pdf/2210.01361.pdf).
 
 ![Overview](media/hero.png)
 
@@ -66,6 +66,8 @@ A variety of scripts have been provided for training and eval under `scripts/`. 
 4. Line 15: Replace with your UncertaintyAwareLidar root directory
 
 The `batch_size` and `batch_size_limit` may need to be changed to account for available GPU memory, and can be modified directly in the bash files under `scripts/`. Other changes to the network architecture can be changed via the configuration files under `config/eval_datasets/` or directly in the bash scripts as input arguments. See `config/default.yaml` for adjustable parameters.
+
+Note: Pretrained models must be downloaded first from [Gdrive](https://drive.google.com/file/d/1C5YzjIJ-8YmwCTKBkL9xCWjl-5y_R_4g/view?usp=sharing) and file weights is unzipped in the main folder before proceeding with the next steps. For convenience generated pickles are provided as well. You can unzip file pickles in the main folder for use.
 
 ### Training
 
