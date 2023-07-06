@@ -1,7 +1,0 @@
-data: 
-  eval_database_files: ['pickles/MulRan/DCC_03_evaluation_database.pickle',
-                        'pickles/MulRan/Riverside_02_evaluation_database.pickle',
-                        'pickles/MulRan/KAIST_01_evaluation_database.pickle',
-                        'pickles/MulRan/KAIST_02_evaluation_database.pickle',
-                        'pickles/MulRan/KAIST_03_evaluation_database.pickle' ]
-  eval_query_files: [null, null, null, null, null]
