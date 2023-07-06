@@ -1,0 +1,40 @@
+save_path: null
+data:
+  num_points: 4096
+  dataset_folder: /datasets/work/d61-eif/source/incrementalPointClouds
+  train_file: pickles/oxford/training_queries_baseline.pickle
+  val_file: null
+  aug_mode: 1
+model:
+  name: MinkFPN_GeM
+  mink_quantization_size: 0.01
+  planes: [32,64,64]
+  layers: [1,1,1]
+  num_top_down: 1
+  conv0_kernel_size: 5
+  output_dim: 256
+  feature_size: 256
+train:
+  num_workers: 4
+  batch_size: 16
+  batch_size_limit: 256
+  batch_expansion_rate: 1.4
+  batch_expansion_th: 0.7
+  loss:
+    name: BatchHardTripletMarginLoss
+    normalize_embeddings: False
+    margin: 0.2
+  optimizer:
+    lr: 0.001
+    epochs: 40
+    scheduler: MultiStepLR
+    scheduler_milestones: [30]
+    weight_decay: 0.001
+eval:
+  cd_thresh_min: 0.001
+  cd_thresh_max: 1
+  num_thresholds: 1000
+  cd_revisit_criteria: 10
+  cd_not_revisit_criteria: 20
+  save_F1_graph: False
+    

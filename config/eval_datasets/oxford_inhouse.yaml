@@ -1,0 +1,9 @@
+data:
+  eval_database_files:  ['pickles/oxford/oxford_evaluation_database.pickle',
+                    'pickles/NUS/business_evaluation_database.pickle', 
+                    'pickles/NUS/residential_evaluation_database.pickle', 
+                    'pickles/NUS/university_evaluation_database.pickle',]
+  eval_query_files: ['pickles/oxford/oxford_evaluation_query.pickle',
+                    'pickles/NUS/business_evaluation_query.pickle', 
+                    'pickles/NUS/residential_evaluation_query.pickle', 
+                    'pickles/NUS/university_evaluation_query.pickle',]

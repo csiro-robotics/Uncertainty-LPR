@@ -1,0 +1,3 @@
+data:
+  eval_database_files:  ['pickles/oxford/oxford_evaluation_database.pickle']
+  eval_query_files: ['pickles/oxford/oxford_evaluation_query.pickle']
