@@ -25,43 +25,77 @@ def make_datasets(debug=False):
         datasets['val'] = OxfordDataset(configs.data.dataset_folder, configs.data.val_file, val_transform)
     return datasets
 
-
 def make_collate_fn(dataset: OxfordDataset, mink_quantization_size=None):
     # set_transform: the transform to be applied to all batch elements
-    def collate_fn(data_list):
-        # Constructs a batch object
-        clouds = [e[0] for e in data_list]
-        labels = [e[1] for e in data_list]
-        batch = torch.stack(clouds, dim=0)       # Produces (batch_size, n_points, 3) tensor
-        if dataset.set_transform is not None:
-            # Apply the same transformation on all dataset elements
-            batch = dataset.set_transform(batch)
+    if configs.data.load_mode == 1:
+        def collate_fn(data_list):
+            # Constructs a batch object
+            clouds = [e[0] for e in data_list]
+            labels = [e[1] for e in data_list]
+            batch = torch.stack(clouds, dim=0)       # Produces (batch_size, n_points, 3) tensor
+            if dataset.set_transform is not None:
+                # Apply the same transformation on all dataset elements
+                batch = dataset.set_transform(batch)
 
-        if mink_quantization_size is None:
-            # Not a MinkowskiEngine based model
-            batch = {'cloud': batch}
-        else:
-            coords = [ME.utils.sparse_quantize(coordinates=e, quantization_size=mink_quantization_size)
-                      for e in batch]
+            if mink_quantization_size is None:
+                # Not a MinkowskiEngine based model
+                batch = {'cloud': batch}
+            else:
+                coords = [ME.utils.sparse_quantize(coordinates=e, quantization_size=mink_quantization_size)
+                        for e in batch]
+                coords = ME.utils.batched_coordinates(coords)
+                # Assign a dummy feature equal to 1 to each point
+                # Coords must be on CPU, features can be on GPU - see MinkowskiEngine documentation
+                feats = torch.ones((coords.shape[0], 1), dtype=torch.float32)
+                batch = {'coords': coords, 'features': feats, 'cloud': batch}
+
+            # Compute positives and negatives mask
+            # Compute positives and negatives mask
+            positives_mask = [[in_sorted_array(e, dataset.queries[label].positives) for e in labels] for label in labels]
+            negatives_mask = [[not in_sorted_array(e, dataset.queries[label].non_negatives) for e in labels] for label in labels]
+            positives_mask = torch.tensor(positives_mask)
+            negatives_mask = torch.tensor(negatives_mask)
+
+            # Returns (batch_size, n_points, 3) tensor and positives_mask and
+            # negatives_mask which are batch_size x batch_size boolean tensors
+            return batch, positives_mask, negatives_mask
+
+    elif configs.data.load_mode == 2:
+        def collate_fn(data_list):
+            # Constructs a batch object
+            clouds = [e[0] for e in data_list]
+            labels = [e[1] for e in data_list]
+            batch = []
+
+            if dataset.set_transform is not None:
+                for c in clouds:
+                    batch.append(dataset.set_transform(c.unsqueeze(0)).squeeze())
+
+            before = sum([b.shape[0] for b in batch])
+            coords = [ME.utils.sparse_quantize(coordinates=e, quantization_size=configs.model.mink_quantization_size)
+                        for e in batch]
             coords = ME.utils.batched_coordinates(coords)
-            # Assign a dummy feature equal to 1 to each point
-            # Coords must be on CPU, features can be on GPU - see MinkowskiEngine documentation
+
+            # print(before, coords.shape[0])
             feats = torch.ones((coords.shape[0], 1), dtype=torch.float32)
-            batch = {'coords': coords, 'features': feats, 'cloud': batch}
+            batch = {'coords': coords, 'features': feats}
 
-        # Compute positives and negatives mask
-        # Compute positives and negatives mask
-        positives_mask = [[in_sorted_array(e, dataset.queries[label].positives) for e in labels] for label in labels]
-        negatives_mask = [[not in_sorted_array(e, dataset.queries[label].non_negatives) for e in labels] for label in labels]
-        positives_mask = torch.tensor(positives_mask)
-        negatives_mask = torch.tensor(negatives_mask)
+            # Compute positives and negatives mask
+            # Compute positives and negatives mask
+            positives_mask = [[in_sorted_array(e, dataset.queries[label].positives) for e in labels] for label in labels]
+            negatives_mask = [[not in_sorted_array(e, dataset.queries[label].non_negatives) for e in labels] for label in labels]
+            positives_mask = torch.tensor(positives_mask)
+            negatives_mask = torch.tensor(negatives_mask)
 
-        # Returns (batch_size, n_points, 3) tensor and positives_mask and
-        # negatives_mask which are batch_size x batch_size boolean tensors
-        return batch, positives_mask, negatives_mask
+            # Returns (batch_size, n_points, 3) tensor and positives_mask and
+            # negatives_mask which are batch_size x batch_size boolean tensors
+            return batch, positives_mask, negatives_mask
+
+    else:
+        raise ValueError(f'Error: load mode {configs.data.load_mode} not valid')
+
 
     return collate_fn
-
 
 def make_dataloaders(debug=False):
     """

@@ -1,0 +1,19 @@
+data:
+  eval_database_files:  ['pickles/oxford/oxford_evaluation_database.pickle',
+                        'pickles/MulRan/DCC_03_evaluation_database.pickle',
+                        'pickles/MulRan/Riverside_02_evaluation_database.pickle',
+                        'pickles/oxford/business_evaluation_database.pickle', 
+                        'pickles/oxford/residential_evaluation_database.pickle', 
+                        'pickles/oxford/university_evaluation_database.pickle']
+  eval_query_files: ['pickles/oxford/oxford_evaluation_query.pickle',
+                    null, 
+                    null, 
+                    'pickles/oxford/business_evaluation_query.pickle', 
+                    'pickles/oxford/residential_evaluation_query.pickle', 
+                    'pickles/oxford/university_evaluation_query.pickle']
+model:
+  name: MinkFPNDropout_GeM
+  dropout_rate: 0.5
+  dropout_location: -2
+train:
+  batch_size_limit: 64

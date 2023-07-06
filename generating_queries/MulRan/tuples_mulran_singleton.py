@@ -17,7 +17,7 @@ FILENAME = "pd_northing_easting.csv"
 POINTCLOUD_FOLS = "/Ouster/"
 
 
-def construct_query_dict(df_centroids, base_path, filename, ind_nn_r, ind_r_r=50):
+def construct_query_dict(df_centroids, base_path, filename, ind_nn_r, ind_r_r=50, force_bin = False):
     # ind_nn_r: threshold for positive examples
     # ind_r_r: threshold for negative examples
     # Baseline dataset parameters in the original PointNetVLAD code: ind_nn_r=10, ind_r=50
@@ -31,21 +31,22 @@ def construct_query_dict(df_centroids, base_path, filename, ind_nn_r, ind_r_r=50
         anchor_pos = np.array(df_centroids.iloc[anchor_ndx][['northing', 'easting']])
         query = df_centroids.iloc[anchor_ndx]["file"]
         # Extract timestamp from the filename
-        # print(query)
         scan_filename = os.path.split(query)[1]
         assert os.path.splitext(scan_filename)[1] == '.npy', f"Expected .npy file: {scan_filename}"
+        
         timestamp = int(os.path.splitext(scan_filename)[0])
 
         positives = ind_nn[anchor_ndx]
         non_negatives = ind_r[anchor_ndx]
 
         positives = positives[positives != anchor_ndx]
-
         
         # Sort ascending order
         positives = np.sort(positives)
         non_negatives = np.sort(non_negatives)
-        # print('\n############\n', anchor_ndx, '\n\n', positives, '\n\n', non_negatives)
+
+        if force_bin == True:
+            query = query.replace('npy', 'bin')
 
         # Tuple(id: int, timestamp: int, rel_scan_filepath: str, positives: List[int], non_negatives: List[int])
         queries[anchor_ndx] = TrainingTuple(id=anchor_ndx, timestamp=timestamp, rel_scan_filepath=query,
@@ -62,8 +63,6 @@ def construct_query_dict(df_centroids, base_path, filename, ind_nn_r, ind_r_r=50
 
     return queries 
 
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate Baseline training dataset')
     parser.add_argument('--dataset_root', type=str, required=True, help='Dataset root folder')
@@ -71,15 +70,17 @@ if __name__ == '__main__':
     parser.add_argument('--skip_nonjoint', action = 'store_true', default = False)
     parser.add_argument('--ind_nn_r', type = int, default = 3)
     parser.add_argument('--ind_r_r', type = int, default = 20)
+    parser.add_argument('--force_bin', action = 'store_true', default = False)
     args = parser.parse_args()
     print('Dataset root: {}'.format(args.dataset_root))
 
     assert os.path.exists(args.dataset_root), f"Cannot access dataset root folder: {args.dataset_root}"
     base_path = args.dataset_root
 
-    
-    RUNS_FOLDERS = ["DCC", "Riverside"] # Change these two lines if you want to change the train / test splits
-    EXCLUDED_FOLDERS = ["DCC_03", "Riverside_02"] # Change these two lines if you want to change the train / test splits 
+    RUNS_FOLDERS = ["DCC", "Riverside"] # Change these two lines if you want to change the train / test splits, eg. ["DCC","Riverside","KAIST"] 
+    EXCLUDED_FOLDERS = ["DCC_03", "Riverside_02"]  # Change these two lines if you want to change the train / test splits, eg. ["DCC_03","Riverside_02","KAIST_03"] 
+
+
     all_trees = []
     df_all_train = pd.DataFrame(columns=['file', 'northing', 'easting'])
 
@@ -100,26 +101,7 @@ if __name__ == '__main__':
         
         print(f"Train samples for {RUNS_FOLDER} : {len(df_train)}")
         if not args.skip_nonjoint:
-            construct_query_dict(df_train, args.save_path, f"train_queries_MULRAN_{RUNS_FOLDER}.pickle", ind_nn_r = args.ind_nn_r, ind_r_r = args.ind_r_r)
+            construct_query_dict(df_train, args.save_path, f"train_queries_MULRAN_{RUNS_FOLDER}logg.pickle", ind_nn_r = args.ind_nn_r, ind_r_r = args.ind_r_r, force_bin = args.force_bin)
     
     print("Number of training submaps: " + str(len(df_all_train['file'])))
-    construct_query_dict(df_all_train, args.save_path, f"train_queries_MulRan.pickle", ind_nn_r=args.ind_nn_r, ind_r_r = args.ind_r_r)
-    #         print(folder)
-    #         df_locations = pd.read_csv(os.path.join(base_path, 'MulRan', RUNS_FOLDER, folder, FILENAME), sep=',')
-    #         df_locations['timestamp'] = 'MulRan/' + RUNS_FOLDER + '/' + folder + POINTCLOUD_FOLS + df_locations['timestamp'].astype(str) + '.npy'
-    #         df_train = df_locations.rename(columns={'timestamp': 'file'})
-    #         print(df_train['file'])
-    #         if folder not in EXCLUDED_FOLDERS:
-    #             all_trees.append(df_train)
-    #             df_all_train = df_all_train.append(df_train)
-    #         else:
-    #             print("EXCLUDING: {}".format(folder))
-    #         construct_query_dict(df_train, os.path.join(base_path, 'pickles', 'MulRan', args.save_folder), f"train_queries_MULRAN_{folder}.pickle", ind_nn_r=args.ind_nn_r, ind_r_r = args.ind_r_r)
-
-    #         # if not args.skip_nonjoint:
-    #         #     print("Number of training submaps: " + str(len(df_train['file'])))
-    #         #     construct_query_dict(df_train, os.path.join(base_path, 'pickles', 'MulRan', args.save_folder), f"train_queries_MULRAN_{folder}.pickle", ind_nn_r=args.ind_nn_r, ind_r_r = args.ind_r_r)
-    
-    # # Do all
-    # print("Number of training submaps: " + str(len(df_all_train['file'])))
-    # construct_query_dict(df_all_train, os.path.join(base_path, 'pickles', 'MulRan', args.save_folder), f"train_queries_MULRAN_JOINT_v2.pickle", ind_nn_r=args.ind_nn_r, ind_r_r = args.ind_r_r)
+    construct_query_dict(df_all_train, args.save_path, f"train_queries_MULRAN_logg.pickle", ind_nn_r=args.ind_nn_r, ind_r_r = args.ind_r_r, force_bin = args.force_bin)

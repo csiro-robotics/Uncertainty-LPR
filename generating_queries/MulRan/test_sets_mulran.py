@@ -14,20 +14,17 @@ from glob import glob
 RUNS_FOLDER = "MulRan/"
 FILENAME = "pd_northing_easting.csv"
 POINTCLOUD_FOLS = "Ouster"
-def construct_query_and_database_sets(data_root, folder, eval_thresh, time_thresh, save_path):
+def construct_query_and_database_sets(data_root, folder, eval_thresh, time_thresh, save_path, filetype):
     
     # Load data, make distance and time trees
-    df_locations = pd.read_csv(os.path.join(data_root, folder, FILENAME))
-    df_locations['file'] = folder + '/' + POINTCLOUD_FOLS + '/' + df_locations['timestamp'].astype(str) + '.npy'
+    print(data_root, folder, FILENAME)
+    df_locations = pd.read_csv(os.path.join(data_root, folder[1:], FILENAME))
+    df_locations['file'] = folder + '/' + POINTCLOUD_FOLS + '/' + df_locations['timestamp'].astype(str) + filetype
     
     print(df_locations[['timestamp','file']])
     df_locations['timestamp'] = df_locations['timestamp'] / 1e9
     distance_tree = KDTree(df_locations[['northing', 'easting']])
     time_tree = KDTree(df_locations['timestamp'].to_numpy().reshape(-1,1))
-
-    # Make locations dataframe
-    
-    # df_locations = df_locations.rename(columns={'timestamp': 'file'})
 
     # Make database
     database = {}
@@ -35,7 +32,6 @@ def construct_query_and_database_sets(data_root, folder, eval_thresh, time_thres
         database[len(database.keys())] = {'query': row['file'], 'northing': row['northing'],
                                               'easting': row['easting'], 'timestamp': row['timestamp']}
     
-
     # Get positive matches
     start_time = database[0]['timestamp']
     for key in tqdm(range(len(database.keys()))):
@@ -72,6 +68,7 @@ if __name__ == '__main__':
     parser.add_argument('--eval_thresh', type = int, default = 10)
     parser.add_argument('--time_thresh', type = int, default = 90)
     parser.add_argument('--save_path', type = str, required = True)
+    parser.add_argument('--filetype', type = str, default = '.npy')
 
     args = parser.parse_args()
     print('Dataset root: {}'.format(args.dataset_root))
@@ -91,4 +88,5 @@ if __name__ == '__main__':
             eval_thresh = args.eval_thresh,
             time_thresh = args.time_thresh,
             save_path = args.save_path,
+            filetype = args.filetype
         )

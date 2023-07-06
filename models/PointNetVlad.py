@@ -47,12 +47,10 @@ class NetVLADLoupe(nn.Module):
         x = x.view((-1, self.max_samples, self.feature_size))
         activation = torch.matmul(x, self.cluster_weights)
         if self.add_batch_norm:
-            # activation = activation.transpose(1,2).contiguous()
             activation = activation.view(-1, self.cluster_size)
             activation = self.bn1(activation)
             activation = activation.view(-1,
                                          self.max_samples, self.cluster_size)
-            # activation = activation.transpose(1,2).contiguous()
         else:
             activation = activation + self.cluster_biases
         activation = self.softmax(activation)
@@ -203,9 +201,6 @@ class PointNetfeat(nn.Module):
         trans = self.stn(x)
         x = torch.matmul(torch.squeeze(x), trans)
         x = x.view(batchsize, 1, -1, 3)
-        #x = x.transpose(2,1)
-        #x = torch.bmm(x, trans)
-        #x = x.transpose(2,1)
         x = F.relu(self.bn1(self.conv1(x)))
         x = F.relu(self.bn2(self.conv2(x)))
         pointfeat = x
@@ -245,11 +240,11 @@ class PointNetVlad(nn.Module):
                                      is_training=True)
 
     def forward(self, batch):
-        assert 'cloud' in batch.keys(), 'Error: Key "Cloud" not in batch keys.  Set model.mink_quantization_size to "None" to avoid!'
+        assert 'cloud' in batch.keys(), 'Error: Key "cloud" not in batch keys.  Set model.mink_quantization_size to "None" to avoid!'
         x = batch['cloud'].unsqueeze(1)
         x = self.point_net(x)
         x = self.net_vlad(x)
-        return x #{'global_embedding': x}
+        return x 
 
 
 if __name__ == '__main__':

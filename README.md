@@ -1,174 +1,174 @@
-# MinkLoc3D: Point Cloud Based Large-Scale Place Recognition
+# Uncertainty-Aware Lidar Place Recognition in Novel Environments
 
-Paper: [MinkLoc3D: Point Cloud Based Large-Scale Place Recognition](https://ieeexplore.ieee.org/document/9423215) 
-2021 IEEE Winter Conference on Applications of Computer Vision (WACV)
-[arXiv](http://arxiv.org/abs/2011.04530)
+This repository contains the code implementation used in the paper [Uncertainty-Aware Lidar Place Recognition in Novel Environments](https://arxiv.org/pdf/2210.01361.pdf) (accepted by ?) [[arXiv]](https://arxiv.org/pdf/2210.01361.pdf).
 
-[Supplementary material](media/MinkLoc3D_Supplementary_Material.pdf)
+![Overview](media/hero.png)
 
-[Jacek Komorowski](mailto:jacek.komorowski@pw.edu.pl)
+## Abstract
 
-Warsaw University of Technology
+State-of-the-art lidar place recognition models exhibit unreliable performance when tested on environments different from their training dataset, which limits their use in complex and evolving environments. To address this issue, we investigate the task of uncertainty-aware lidar place recognition, where each predicted place must have an associated uncertainty that can be used to identify and reject incorrect predictions. We introduce a novel evaluation protocol and present the first comprehensive benchmark for this task, testing across five uncertainty estimation techniques and three large-scale datasets. Our results show that an Ensembles approach is the highest performing technique, consistently improving the performance of lidar place recognition and uncertainty estimation in novel environments, though it incurs a computational cost. Our code repository will be made publicly available upon acceptance at https://github.com/csiro-robotics/Uncertainty-LPR.
 
-### What's new ###
-* [2021-09-29] Updated version of MinkLoc3D code is released. Changes include: optimization of training and evaluation pickles generation process; 
-code updated to work with recent version of Pytorch and MinkowskiEngine. 
+## Contributions
 
-### Our other projects ###
-* MinkLoc++: Lidar and Monocular Image Fusion for Place Recognition (IJCNN 2021): [MinkLoc++](https://github.com/jac99/MinkLocMultimodal)
-* Large-Scale Topological Radar Localization Using Learned Descriptors (ICONIP 2021): [RadarLoc](https://github.com/jac99/RadarLoc)
-* EgonNN: Egocentric Neural Network for Point Cloud Based 6DoF Relocalization at the City Scale (IEEE Robotics and Automation Letters April 2022): [EgoNN](https://github.com/jac99/Egonn) 
+This repository allows replication of results in the following:
+* Training one standard network and four uncertainty-aware networks ([PFE](https://openaccess.thecvf.com/content_ICCV_2019/papers/Shi_Probabilistic_Face_Embeddings_ICCV_2019_paper.pdf), [STUN](https://arxiv.org/pdf/2203.01851.pdf), [MC Dropout](https://proceedings.mlr.press/v48/gal16.html?trk=public_post_comment-text) and [Deep Ensembles](https://proceedings.neurips.cc/paper/2017/hash/9ef2ed4b7fd2c810847ffa5fa85bce38-Abstract.html)) for lidar place recognition (LPR) using [MinkLoc3D](https://github.com/jac99/MinkLoc3D) across 3 environments.
+* Evaluating these methods across 6 environments (1 seen and 5 novel) for a total train-eval split of 18, using a range of metrics to quantify place recognition ability and uncertainty estimation.
+* Ablation: How does the Ensemble size influence performance?
+* Ablation: In addition to [MinkLoc3D](https://github.com/jac99/MinkLoc3D), training [TransLoc3D](https://github.com/slothfulxtx/TransLoc3D) and [PointNetVLAD](https://github.com/mikacuy/pointnetvlad) as standard networks and evaluating as Ensembles.
 
-### Introduction
-The paper presents a learning-based method for computing a discriminative 3D point cloud descriptor for place recognition purposes. 
-Existing methods, such as PointNetVLAD, are based on unordered point cloud representation. They use PointNet as the first processing step to extract local features, which are later aggregated into a global descriptor. 
-The PointNet architecture is not well suited to capture local geometric structures. Thus, state-of-the-art methods enhance vanilla PointNet architecture by adding different mechanism to capture local contextual information, such as graph convolutional networks or using hand-crafted features. 
-We present an alternative approach, dubbed **MinkLoc3D**, to compute a discriminative 3D point cloud descriptor, based on a sparse voxelized point cloud representation and sparse 3D convolutions.
-The proposed method has a simple and efficient architecture. Evaluation on standard benchmarks proves that MinkLoc3D outperforms current state-of-the-art.  
+## Environment
 
-![Overview](media/overview.jpg)
+### Dependencies
 
-### Citation
-If you find this work useful, please consider citing:
-
-    @INPROCEEDINGS{9423215,
-      author={Komorowski, Jacek},
-      booktitle={2021 IEEE Winter Conference on Applications of Computer Vision (WACV)}, 
-      title={MinkLoc3D: Point Cloud Based Large-Scale Place Recognition}, 
-      year={2021},
-      volume={},
-      number={},
-      pages={1789-1798},
-      doi={10.1109/WACV48630.2021.00183}}
-
-### Environment and Dependencies
-Code was tested using Python 3.8 with PyTorch 1.9.1 and MinkowskiEngine 0.5.4 on Ubuntu 20.04 with CUDA 10.2.
-Note: CUDA 11.1 is not recommended as there are some issues with MinkowskiEngine 0.5.4 on CUDA 11.1. 
+Code was tested using Python 3.8 with PyTorch 1.9.0 and MinkowskiEngine 0.5.4 on Ubuntu 20.04 with CUDA 11.1.
 
 The following Python packages are required:
-* PyTorch (version 1.9.1)
+* PyTorch (version 1.9.0)
 * MinkowskiEngine (version 0.5.4)
 * pytorch_metric_learning (version 1.0 or above)
+* torchpack
 * tensorboard
 * pandas
 
-
 Modify the `PYTHONPATH` environment variable to include absolute path to the project root folder: 
-```export PYTHONPATH
-export PYTHONPATH=$PYTHONPATH:/home/.../MinkLoc3D
+```
+export PYTHONPATH=$PYTHONPATH:/.../.../MinkLoc3D
 ```
 
 ### Datasets
 
-**MinkLoc3D** is trained on a subset of Oxford RobotCar and In-house (U.S., R.A., B.D.) datasets introduced in
-*PointNetVLAD: Deep Point Cloud Based Retrieval for Large-Scale Place Recognition* paper ([link](https://arxiv.org/pdf/1804.03492)).
-There are two training datasets:
-- Baseline Dataset - consists of a training subset of Oxford RobotCar
-- Refined Dataset - consists of training subset of Oxford RobotCar and training subset of In-house
+The **Oxford RobotCar** and **NUS Inhouse** datasets were introduced in [PointNetVLAD: Deep Point Cloud Based Retrieval for Large-Scale Place Recognition](https://arxiv.org/pdf/1804.03492). Oxford RobotCar was trained on point clouds collected through Oxford, U.K. NUS Inhouse consists of traversals from three different regions in Singapore - a university sector (U.S.), a residential area (R.A.) and a business district (B.D.). For the purposes of evaluating performance in novel environments, the Oxford RobotCar baseline dataset is utilised as one of the 3 training datasets, and NUS Inhouse's 3 regions are unseen in training and utilised as 3 evaluation datasets. The refined dataset trained on Oxford and Inhouse are not used in this work.
 
-For dataset description see PointNetVLAD paper or github repository ([link](https://github.com/mikacuy/pointnetvlad)).
+You can download training and evaluation datasets from [here](https://drive.google.com/open?id=1rflmyfZ1v9cGGH0RL4qXRrKhg-8A-U9q) ([alternative link](https://drive.google.com/file/d/1-1HA9Etw2PpZ8zHd3cjrfiZa8xzbp41J/view?usp=sharing)). 
 
-You can download training and evaluation datasets from 
-[here](https://drive.google.com/open?id=1rflmyfZ1v9cGGH0RL4qXRrKhg-8A-U9q) 
-([alternative link](https://drive.google.com/file/d/1-1HA9Etw2PpZ8zHd3cjrfiZa8xzbp41J/view?usp=sharing)). 
+Pickles were created following the split of the original and are available under `pickles/`, but can be modified and generated using `generating_queries/generate_training_tuples_baseline.py` and `generating_queries/generate_test_sets.py`.
 
-Before the network training or evaluation, run the below code to generate pickles with positive and negative point clouds for each anchor point cloud. 
-NOTE: Training and evaluation pickles format has changed in this release of MinkLoc3D code. If you have created these files using
-the previous version of the code, they must be removed and re-created.
+The **MulRan** datasets consist of 3 traversals each of 4 different environments in South Korea - Daejeon Convention Center (**DCC**), the **Riverside** of Daejeon city, the Korea Advanced Institute of Science and Technology (KAIST) and Sejong city (Sejong). More details can be found in [MulRan: Multimodal Range Dataset for Urban Place Recognition](https://ieeexplore.ieee.org/document/9197298).
 
-```generate pickles
-cd generating_queries/ 
+Similarly to [InCloud](https://github.com/csiro-robotics/InCloud), we modify the datasets by removing the ground plane, normalizing point co-ordinates between -1 and 1 and downsampling to 4096 points to mimic the pre-processing of the Oxford RobotCar and NUS Inhouse datasets. These pre-processed datasets for DCC (MulRan) and Riverside (MulRan) are available [here]. 
 
-# Generate training tuples for the Baseline Dataset
-python generate_training_tuples_baseline.py --dataset_root <dataset_root_path>
+This paper trains on DCC traversals 1 and 2 and Riverside traversals 1 and 3. At evaluation, we use DCC traversal 3 and Riverside traversal 2. These pickles are available under `pickles/`, but can be modified and generated using `generating_queries/MulRan/tuples_mulran_singleton.py` and `generating_queries/MulRan/test_sets_mulran.py`.
 
-# Generate training tuples for the Refined Dataset
-python generate_training_tuples_refine.py --dataset_root <dataset_root_path>
+After downloading datasets, please save folders `oxford`, `inhouse_datasets` and `MulRan` directly under `data/`.
 
-# Generate evaluation tuples
-python generate_test_sets.py --dataset_root <dataset_root_path>
-```
-`<dataset_root_path>` is a path to dataset root folder, e.g. `/data/pointnetvlad/benchmark_datasets/`.
-Before running the code, ensure you have read/write rights to `<dataset_root_path>`, as training and evaluation pickles
-are saved there. 
+## Getting Started
+
+### Preprocessing
+
+To run any bash file, please making the change to `config/default.yaml`:
+
+1.  Line 5: Replace with `data/` directory containing all three subfolders of datasets.
+
+A variety of scripts have been provided for training and eval under `scripts/`. The following changes should be made to each of these:
+
+2. Line 10: Change path to your conda installation
+3. Line 11: Replace environment name with your conda environment
+4. Line 15: Replace with your UncertaintyAwareLidar root directory
+
+The `batch_size` and `batch_size_limit` may need to be changed to account for available GPU memory, and can be modified directly in the bash files under `scripts/`. Other changes to the network architecture can be changed via the configuration files under `config/eval_datasets/` or directly in the bash scripts as input arguments. See `config/default.yaml` for adjustable parameters.
 
 ### Training
-To train **MinkLoc3D** network, download and decompress the dataset and generate training pickles as described above.
-Edit the configuration file (`config_baseline.txt` or `config_refined.txt`). 
-Set `dataset_folder` parameter to the dataset root folder.
-Modify `batch_size_limit` parameter depending on available GPU memory. 
-Default limit (=256) requires at least 11GB of GPU RAM.
 
-To train the network, run:
+To train a standard network across a variety of configurations:
 
-```train baseline
-cd training
-
-# To train minkloc3d model on the Baseline Dataset
-python train.py --config ../config/config_baseline.txt --model_config ../models/minkloc3d.txt
-
-# To train minkloc3d model on the Refined Dataset
-python train.py --config ../config/config_refined.txt --model_config ../models/minkloc3d.txt
+```
+# bash scripts/train.sh <minkloc,pvlad,transloc> <oxford,dcc,riverside> <model number>
+bash scripts/train.sh minkloc oxford 1
 ```
 
-### Pre-trained Models
+To train the uncertainty-aware methods across 3 environments:
 
-Pretrained models are available in `weights` directory
-- `minkloc3d_baseline.pth` trained on the Baseline Dataset 
-- `minkloc3d_refined.pth` trained on the Refined Dataset 
+```
+# To train a PFE network 
+# bash scripts/pfe_stun_dropout/train_pfe.sh <oxford,dcc,riverside> 
+bash scripts/pfe_stun_dropout/train_pfe.sh oxford
+
+# To train a STUN network
+# bash scripts/pfe_stun_dropout/train_stun.sh <oxford,dcc,riverside> 
+bash scripts/pfe_stun_dropout/train_stun.sh oxford
+
+# To train a Dropout network
+# bash scripts/pfe_stun_dropout/train_dropout.sh <oxford,dcc,riverside> 
+bash scripts/pfe_stun_dropout/train_dropout.sh oxford
+```
+
+An Ensemble is created at evaluation time, so please train 5 standard networks across any architecture and dataset numbered 1-5.
 
 ### Evaluation
 
-To evaluate pretrained models run the following commands:
+To evaluate a standard model across 6 environments:
 
-```eval baseline
-cd eval
-
-# To evaluate the model trained on the Baseline Dataset
-python evaluate.py --config ../config/config_baseline.txt --model_config ../models/minkloc3d.txt --weights ../weights/minkloc3d_baseline.pth
-
-# To evaluate the model trained on the Refined Dataset
-python evaluate.py --config ../config/config_refined.txt --model_config ../models/minkloc3d.txt --weights ../weights/minkloc3d_refined.pth
+```
+# bash scripts/eval.sh <minkloc,pvlad,transloc> <oxford,dcc,riverside> <model number>
+bash scripts/eval.sh minkloc oxford 1
 ```
 
-## Results
+To evaluate the uncertainty-aware methods across 6 environments:
 
-**MinkLoc3D** performance (measured by Average Recall@1\%) compared to state-of-the-art:
+```
+# To evaluate a PFE network 
+# bash scripts/pfe_stun_dropout/eval_pfe.sh <oxford,dcc,riverside> 
+bash scripts/pfe_stun_dropout/eval_pfe.sh oxford
 
-### Trained on Baseline Dataset
+# To evaluate a STUN network 
+# bash scripts/pfe_stun_dropout/eval_stun.sh <oxford,dcc,riverside> 
+bash scripts/pfe_stun_dropout/eval_stun.sh oxford
 
-| Method         | Oxford  | U.S. | R.A. | B.D |
-| ------------------ |---------------- | -------------- |---|---|
-| PointNetVLAD [1] |     80.3     |   72.6 | 60.3 | 65.3 |
-| PCAN [2] |     83.8     |   79.1 | 71.2 | 66.8 |
-| DAGC [3] |     87.5     |   83.5 | 75.7 | 71.2 |
-| LPD-Net [4] |     94.9   |   96.0 | 90.5 | **89.1** |
-| EPC-Net [5] |     94.7   |   **96.5** | 88.6 | 84.9 |
-| SOE-Net [6] |     96.4   |   93.2 | **91.5** | 88.5 |
-| NDT-Transformer [7] | 97.7 | | | |
-| **MinkLoc3D (our)**  |     **97.9**     |   95.0 | 91.2 | 88.5 |
+# To evaluate a Dropout network 
+# bash scripts/pfe_stun_dropout/eval_dropout.sh <oxford,dcc,riverside> 
+bash scripts/pfe_stun_dropout/eval_dropout.sh oxford
 
+# To evaluate an Ensemble of 5 models, with standard networks numbered 1-5 in the same configuration trained and saved under weights/batch_jobs/
+# bash scripts/eval_ensemble.sh <minkloc,pvlad,transloc> <oxford,dcc,riverside>
+bash scripts/eval_ensemble.sh minkloc oxford
 
-### Trained on Refined Dataset
+# To evaluation an Ensemble of M models, with standard networks numbered 1-M in the same configuration trained and saved under weights/batch_jobs/
+# bash scripts/ablation/eval_ensemble_ablation.sh <minkloc,pvlad,transloc> <oxford,dcc,riverside> <M>
+bash scripts/ablation/eval_ensemble_ablation.sh minkloc oxford 10
+```
 
-| Method         | Oxford  | U.S. | R.A. | B.D |
-| ------------------ |---------------- | -------------- |---|---|
-| PointNetVLAD [1] |     80.1 |   94.5 | 93.1 | 86.5 |
-| PCAN [2] |     86.4     |   94.1 | 92.3 | 87.0 |
-| DAGC [3] |     87.8     |   94.3 | 93.4 | 88.5 |
-| LPD-Net [4] |     94.9     |   98.9 | 96.4 | 94.4 |
-| SOE-Net [6] |     96.4   |   **97.7** | 95.9 | 92.6 |
-| **MinkLoc3D (our)**  |     **98.5**     |   **99.7** | **99.3** | **96.7** |
+### Pretrained Models 
 
-1. M. A. Uy and G. H. Lee, "PointNetVLAD: Deep Point Cloud Based Retrieval for Large-Scale Place Recognition", 2018 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)
-2. W. Zhang and C. Xiao, "PCAN: 3D Attention Map Learning Using Contextual Information for Point Cloud Based Retrieval", 2019 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)
-3. Q. Sun et al., "DAGC: Employing Dual Attention and Graph Convolution for Point Cloud based Place Recognition", Proceedings of the 2020 International Conference on Multimedia Retrieval
-4. Z. Liu et al., "LPD-Net: 3D Point Cloud Learning for Large-Scale Place Recognition and Environment Analysis", 2019 IEEE/CVF International Conference on Computer Vision (ICCV)
-5. L. Hui et al., "Efficient 3D Point Cloud Feature Learning for Large-Scale Place Recognition", preprint arXiv:2101.02374 (2021)
-6. Y. Xia et al., "SOE-Net: A Self-Attention and Orientation Encoding Network for Point Cloud based Place Recognition", 2021 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)
-7. Z. Zhou et al., "NDT-Transformer: Large-scale 3D Point Cloud Localisation Using the Normal Distribution Transform Representation", 
-   2021 IEEE International Conference on Robotics and Automation (ICRA)
-* J. Komorowski, "MinkLoc3D: Point Cloud Based Large-Scale Place Recognition", Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV), (2021)
+Pretrained models are available under `weights/` and `weights/pfe_stun_dropout/`. Standard, PFE, STUN and Dropout models can be evaluated as is, but to evaluate an Ensemble 5 standard models must be trained and saved under `weights/batch_jobs` as per the instructions above.
 
-### License
-Our code is released under the MIT License (see LICENSE file for details).
+|Architecture | Method | Trained on | Model | 
+|--|--|--|--|
+| MinkLoc3D | Standard | Oxford RobotCar | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/minkloc_oxford.pth?at=public_git) |
+|  |  | DCC (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/minkloc_dcc.pth?at=public_git) |
+|  |  | Riverside (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/minkloc_riverside.pth?at=public_git) |
+|  | PFE | Oxford RobotCar | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pfe_stun_dropout/pfe_minkloc_oxford.pth?at=refs%2Fheads%2Fpublic_git) |
+|  |  | DCC (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pfe_stun_dropout/pfe_minkloc_dcc.pth?at=refs%2Fheads%2Fpublic_git) |
+|  |  | Riverside (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pfe_stun_dropout/pfe_minkloc_riverside.pth?at=refs%2Fheads%2Fpublic_git) |
+|  | STUN | Oxford RobotCar | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pfe_stun_dropout/stun_minkloc_oxford.pth?at=refs%2Fheads%2Fpublic_git) |
+|  |  | DCC (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pfe_stun_dropout/stun_minkloc_dcc.pth?at=refs%2Fheads%2Fpublic_git) |
+|  |  | Riverside (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pfe_stun_dropout/stun_minkloc_riverside.pth?at=refs%2Fheads%2Fpublic_git) |
+|  | Dropout | Oxford RobotCar | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pfe_stun_dropout/dropout_minkloc_oxford.pth?at=refs%2Fheads%2Fpublic_git) |
+|  |  | DCC (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pfe_stun_dropout/dropout_minkloc_dcc.pth?at=refs%2Fheads%2Fpublic_git) |
+|  |  | Riverside (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pfe_stun_dropout/dropout_minkloc_riverside.pth?at=refs%2Fheads%2Fpublic_git) |
+| TransLoc3D | Standard | Oxford RobotCar | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/transloc_oxford.pth?at=refs%2Fheads%2Fpublic_git) |
+|  |  | DCC (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/transloc_dcc.pth?at=refs%2Fheads%2Fpublic_git) |
+|  |  | Riverside (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/transloc_riverside.pth?at=refs%2Fheads%2Fpublic_git) |
+| PointNetVLAD | Standard | Oxford RobotCar | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pvlad_oxford.pth?at=public_git) |
+|  |  | DCC (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pvlad_dcc.pth?at=public_git) |
+|  |  | Riverside (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pvlad_riverside.pth?at=public_git) |
+
+Results are outlined in the paper [Uncertainty-Aware Lidar Place Recognition in Novel Environments](https://arxiv.org/pdf/2210.01361.pdf).
+
+## Updates 
+
+* [2023] Intial Commit
+
+## Citation
+
+If you find this work useful, please consider citing:
+
+    @INPROCEEDINGS{2023uncertaintylidar,
+      title={Uncertainty-Aware Lidar Place Recognition in Novel Environments},
+      author={Mason, Keita and Knights, Joshua and Ramezani, Milad and Moghadam, Peyman and Miller, Dimity},
+      booktitle={?},
+      year={2023},
+      eprint={arXiv preprint arXiv:2210.01361}}
+
+## Acknowledgements 
+
+We would like to thank the authors of **MinkLoc3D** and **InCloud** for their codebases which have been used as starting points for this repository. We would also like to thank the authors of **PointNetVlad** and **TransLoc3D** for their implementations of point cloud place recognition, and the authors of **PFE**, **STUN**, **MC Dropout** and **Deep Ensembles** for their implementations of uncertainty estimation.

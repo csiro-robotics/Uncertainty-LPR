@@ -1,10 +1,12 @@
 save_path: null
+save_results : null
 data:
   num_points: 4096
   dataset_folder: /datasets/work/d61-eif/source/incrementalPointClouds
-  train_file: pickles/oxford/training_queries_baseline.pickle
+  train_file: pickles/oxford/training_queries_oxford.pickle
   val_file: null
   aug_mode: 1
+  load_mode: 1
 model:
   name: MinkFPN_GeM
   mink_quantization_size: 0.01
@@ -37,4 +39,4 @@ eval:
   cd_revisit_criteria: 10
   cd_not_revisit_criteria: 20
   save_F1_graph: False
-    
+  batch_size: 256

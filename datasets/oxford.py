@@ -15,7 +15,7 @@ from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 import tqdm
 from misc.utils import load_pickle
-
+from torchpack.utils.config import configs
 
 class OxfordDataset(Dataset):
     """
@@ -27,13 +27,19 @@ class OxfordDataset(Dataset):
         self.dataset_path = dataset_path
         self.transform = transform
         self.set_transform = set_transform
-        self.queries = load_pickle(query_filename) #: Dict[int, TrainingTuple] = pickle.load(open(self.query_filepath, 'rb'))
+        self.queries = load_pickle(query_filename) 
         self.image_path = image_path
         self.lidar2image_ndx = lidar2image_ndx
         self.image_transform = image_transform
         self.n_points = 4096    # pointclouds in the dataset are downsampled to 4096 points
         self.image_ext = '.png'
         self.use_cloud = use_cloud
+        if configs.data.load_mode == 1:
+            self.load_pc = self.load_pc_1
+        elif configs.data.load_mode == 2:
+            self.load_pc = self.load_pc_2 
+        else:
+            raise ValueError(f'Error: load mode {configs.data.load_mode} not valid')
         print('{} queries in the dataset'.format(len(self)))
 
     def __len__(self):
@@ -54,23 +60,50 @@ class OxfordDataset(Dataset):
     def get_non_negatives(self, ndx):
         return self.queries[ndx].non_negatives
 
-    def load_pc(self, filename):
+    # 4096 points
+    def load_pc_1(self, filename):
         # Load point cloud, does not apply any transform
         # Returns Nx3 matrix
 
         file_path = os.path.join(self.dataset_path, filename)
+        # if '.bin' in filename:
+        #     pc = np.fromfile(file_path, dtype=np.float64)
+        #     # coords are within -1..1 range in each dimension
+        #     assert pc.shape[0] == self.n_points * 3, "Error in point cloud shape: {}".format(file_path)
+        #     pc = np.reshape(pc, (pc.shape[0] // 3, 3))
+        #     pc = torch.tensor(pc, dtype=torch.float)
         if '.bin' in filename:
-            pc = np.fromfile(file_path, dtype=np.float64)
-            # coords are within -1..1 range in each dimension
-            assert pc.shape[0] == self.n_points * 3, "Error in point cloud shape: {}".format(file_path)
-            pc = np.reshape(pc, (pc.shape[0] // 3, 3))
-            pc = torch.tensor(pc, dtype=torch.float)
+            # TODO FIX LATER 2 THINGS -- in 4096 loaders, asking for .bin when only .npy exist
+            # getting a permission error
+            if os.path.exists(file_path):
+                pc = np.fromfile(file_path, dtype=np.float64)
+                # coords are within -1..1 range in each dimension
+                assert pc.shape[0] == self.n_points * 3, "Error in point cloud shape: {}".format(file_path)
+                pc = np.reshape(pc, (pc.shape[0] // 3, 3))
+                pc = torch.tensor(pc, dtype=torch.float)
+            # if .bin asked for and .npy exists
+            elif os.path.exists(file_path.replace(".bin", ".npy")):
+                # permission denied on /datasets/work/d61-eif/source/incrementalPointClouds/MulRan/DCC/DCC_02/Ouster/1566533860991046993.npy
+                if 'DCC/DCC_02/Ouster/1566533860991046993.npy' not in file_path.replace(".bin", ".npy"):
+                    pc = np.load(file_path.replace(".bin", ".npy"))[:,:3]
+                    assert pc.shape[0] == self.n_points and pc.shape[1] == 3, 'Error in point cloud shape: {}'.format(file_path.replace(".bin", ".npy"))
+                    pc = torch.tensor(pc, dtype = torch.float)
+                else:
+                    pc = np.load(file_path.replace("1566533860991046993.bin", "1566534559484114597.npy"))[:,:3]
+                    assert pc.shape[0] == self.n_points and pc.shape[1] == 3, 'Error in point cloud shape: {}'.format(file_path.replace("1566533860991046993.bin", "1566534559484114597.npy"))
+                    pc = torch.tensor(pc, dtype = torch.float)
         elif '.npy' in filename:
             pc = np.load(file_path)[:,:3]
             assert pc.shape[0] == self.n_points and pc.shape[1] == 3, 'Error in point cloud shape: {}'.format(file_path)
             pc = torch.tensor(pc, dtype = torch.float)
         return pc
 
+    def load_pc_2(self, filename):
+        file_path = os.path.join(self.dataset_path, filename)
+        xyz = np.fromfile(file_path, dtype=np.float32).reshape(-1, 4)[:,:3]
+        largest_dist = np.max(np.abs(xyz[:,:2]))
+        xyz = torch.tensor(xyz)
+        return xyz
 
 class TrainingTuple:
     # Tuple describing an element for training/validation

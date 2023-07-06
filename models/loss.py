@@ -6,10 +6,16 @@ import torch
 from pytorch_metric_learning import losses, miners, reducers
 from pytorch_metric_learning.distances import LpDistance
 from torchpack.utils.config import configs 
+#import torch.nn.functional as F
 
 
-def make_loss():
-    if configs.train.loss.name == 'BatchHardTripletMarginLoss':
+def make_loss(uncertainty_method):
+    if uncertainty_method=="stun_student":
+        # Stun uncertainty-aware loss function
+        loss_fn = StunUncertaintyAwareLoss()
+    elif uncertainty_method == 'pfe':
+        loss_fn = PFELoss(False)
+    elif configs.train.loss.name == 'BatchHardTripletMarginLoss':
         # BatchHard mining with triplet margin loss
         # Expects input: embeddings, positives_mask, negatives_mask
         loss_fn = BatchHardTripletLossWithMasks(configs.train.loss.margin, configs.train.loss.normalize_embeddings)
@@ -70,7 +76,7 @@ def get_min_per_row(mat, mask):
     mat_masked = mat.clone()
     mat_masked[~mask] = float('inf')
     return torch.min(mat_masked, dim=1), non_inf_rows
-
+    
 
 class BatchHardTripletLossWithMasks:
     def __init__(self, margin, normalize_embeddings):
@@ -131,3 +137,78 @@ class BatchHardContrastiveLossWithMasks:
                  }
 
         return loss, stats, hard_triplets
+
+class StunUncertaintyAwareLoss:
+
+    def __call__(self, embeddings_teacher, embeddings, var):
+        assert embeddings.dim() == 2
+        assert embeddings_teacher.dim() == 2
+        assert var.dim() == 2
+        loss = self.stunloss(embeddings_teacher, embeddings, var)
+        stats = {'loss': loss.item()}
+        return loss, stats
+
+    def stunloss(self, embeddings_teacher, embeddings, var):
+        if configs.train.loss.normalize_embeddings == True:
+            embeddings = torch.nn.functional.normalize(embeddings, p=2, dim=1)
+            embeddings_teacher = torch.nn.functional.normalize(embeddings_teacher, p=2, dim=1)
+
+        nominator = (embeddings_teacher - embeddings)**2
+        denominator = 2*var + 1e-6
+        regulator = 0.5 * torch.log(var)
+
+        loss = torch.div(nominator, denominator) + regulator # B x D 
+        loss = loss.sum(1).sum()
+
+        return loss
+
+class PFELoss:
+    def __init__(self, normalize_embeddings):
+        self.normalize_embeddings = normalize_embeddings
+        self.distance = LpDistance(normalize_embeddings=normalize_embeddings, collect_stats=True)
+        # We use triplet loss with Euclidean distance
+        self.miner_fn = HardTripletMinerWithMasks(distance=self.distance)
+
+    def __call__(self, embeddings, logVar, positive_mask, negative_mask):
+        assert embeddings.dim() == 2
+        assert logVar.dim() == 2
+
+        if configs.train.loss.normalize_embeddings == True:
+            embeddings = torch.nn.functional.normalize(embeddings, p=2, dim=1)
+
+        var = torch.exp(logVar)
+   
+        #find our triplet pairs
+        anchors, positives, negatives = self.miner_fn(embeddings, positive_mask, negative_mask)
+
+        #pfe only uses anchor + positive, extract these here
+        anchorEmbeddings = embeddings[anchors]
+        positiveEmbeddings = embeddings[positives]
+
+        anchorVars = var[anchors]
+        positiveVars = var[positives]
+      
+        #pass these to the pfe loss
+        loss = self.pfeloss(anchorEmbeddings, positiveEmbeddings, anchorVars, positiveVars)
+        
+        stats = {'loss': loss.item()}
+        return loss, stats
+
+    def similarity_scores(self, aEmbed, pEmbed, aVar, pVar):
+        #as in the paper, ignoring the constant term because it's irrelevant to the loss
+        meanDiffSq = (aEmbed-pEmbed)**2
+        varSum = aVar + pVar
+
+        logVarSum = torch.log(varSum)
+        similarity = -0.5*torch.sum((meanDiffSq/(varSum+1e-10 ))+logVarSum, dim = 1)
+
+        return similarity
+
+    def pfeloss(self, aEmbed, pEmbed, aVar, pVar):
+        
+        sim_scores = self.similarity_scores(aEmbed, pEmbed, aVar, pVar)
+
+        #loss is the mean negative similarity score for all genuine pairs
+        loss = torch.mean(-sim_scores)
+   
+        return loss
