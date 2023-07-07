@@ -5,7 +5,6 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --ntasks-per-node=4
 #SBATCH --gres=gpu:1
-#SBATCH --account=OD-227199
 
 source <path>/miniconda/etc/profile.d/conda.sh # Replace with path to your conda
 conda activate minklocenv # Replace with name of your environment
