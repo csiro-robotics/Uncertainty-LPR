@@ -7,12 +7,12 @@
 #SBATCH --gres=gpu:1
 #SBATCH --account=OD-227199
 
-source /scratch2/gra595/miniconda/etc/profile.d/conda.sh # Replace with path to your conda
+source <path>/miniconda/etc/profile.d/conda.sh # Replace with path to your conda
 conda activate minklocenv # Replace with name of your environment
 
 echo "Architecture: $1, Trained On: $2, No. Models: $3";
 
-_ROOT='/datasets/work/d61-eif/work/gra595/uncertainty_placerecognition/MinkLoc3D' # Replace with root of your MinkLoc3D 
+_ROOT='<path>/Uncertainty-LPR' # Replace with root of your Uncertainty-LPR 
 _WEIGHTS="${_ROOT}/weights/batch_jobs/$1_$2_1/checkpoint_final.pth" 
 _RESULTS="${_ROOT}/results/results_ablation/ens_$1_$2_$3.csv" 
 

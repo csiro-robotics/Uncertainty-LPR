@@ -275,19 +275,7 @@ class EvalDataLoader():
             filename = filename[1:]
         file_path = os.path.join(self.dataset_path, filename)
 
-        # if '.bin' in filename:
-        #     pc = np.fromfile(file_path, dtype=np.float64)
-        #     # coords are within -1..1 range in each dimension
-        #     assert pc.shape[0] == self.n_points * 3, "Error in point cloud shape: {}".format(file_path)
-        #     pc = np.reshape(pc, (pc.shape[0] // 3, 3))
-        #     pc = torch.tensor(pc, dtype=torch.float)
-        # elif '.npy' in filename:
-        #     pc = np.load(file_path)[:,:3]
-        #     assert pc.shape[0] == self.n_points and pc.shape[1] == 3, 'Error in point cloud shape: {}'.format(file_path)
-        #     pc = torch.tensor(pc, dtype = torch.float)
         if '.bin' in filename:
-            # TODO FIX LATER 2 THINGS -- in 4096 loaders, asking for .bin when only .npy exist
-            # getting a permission error
             if os.path.exists(file_path):
                 pc = np.fromfile(file_path, dtype=np.float64)
                 # coords are within -1..1 range in each dimension
@@ -296,7 +284,6 @@ class EvalDataLoader():
                 pc = torch.tensor(pc, dtype=torch.float)
             # if .bin asked for and .npy exists
             elif os.path.exists(file_path.replace(".bin", ".npy")):
-                # permission denied on /datasets/work/d61-eif/source/incrementalPointClouds/MulRan/DCC/DCC_02/Ouster/1566533860991046993.npy
                 if 'DCC/DCC_02/Ouster/1566533860991046993.npy' not in file_path.replace(".bin", ".npy"):
                     pc = np.load(file_path.replace(".bin", ".npy"))[:,:3]
                     assert pc.shape[0] == self.n_points and pc.shape[1] == 3, 'Error in point cloud shape: {}'.format(file_path.replace(".bin", ".npy"))

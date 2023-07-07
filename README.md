@@ -63,7 +63,7 @@ A variety of scripts have been provided for training and eval under `scripts/`. 
 
 2. Line 10: Change path to your conda installation
 3. Line 11: Replace environment name with your conda environment
-4. Line 15: Replace with your UncertaintyAwareLidar root directory
+4. Line 15: Replace with your Uncertainty-LPR root directory
 
 The `batch_size` and `batch_size_limit` may need to be changed to account for available GPU memory, and can be modified directly in the bash files under `scripts/`. Other changes to the network architecture can be changed via the configuration files under `config/eval_datasets/` or directly in the bash scripts as input arguments. See `config/default.yaml` for adjustable parameters.
 
@@ -131,28 +131,28 @@ bash scripts/ablation/eval_ensemble_ablation.sh minkloc oxford 10
 
 ### Pretrained Models 
 
-Pretrained models are available under `weights/` and `weights/pfe_stun_dropout/`. Standard, PFE, STUN and Dropout models can be evaluated as is, but to evaluate an Ensemble 5 standard models must be trained and saved under `weights/batch_jobs` as per the instructions above.
+Pretrained models can be downloaded from from the Gdrive link provided above and should be placed under `weights/`. Standard, PFE, STUN and Dropout models can be evaluated as is, but to evaluate an Ensemble 5 standard models must be trained and saved under `weights/batch_jobs` as per the instructions above.
 
-|Architecture | Method | Trained on | Model | 
-|--|--|--|--|
-| MinkLoc3D | Standard | Oxford RobotCar | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/minkloc_oxford.pth?at=public_git) |
-|  |  | DCC (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/minkloc_dcc.pth?at=public_git) |
-|  |  | Riverside (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/minkloc_riverside.pth?at=public_git) |
-|  | PFE | Oxford RobotCar | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pfe_stun_dropout/pfe_minkloc_oxford.pth?at=refs%2Fheads%2Fpublic_git) |
-|  |  | DCC (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pfe_stun_dropout/pfe_minkloc_dcc.pth?at=refs%2Fheads%2Fpublic_git) |
-|  |  | Riverside (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pfe_stun_dropout/pfe_minkloc_riverside.pth?at=refs%2Fheads%2Fpublic_git) |
-|  | STUN | Oxford RobotCar | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pfe_stun_dropout/stun_minkloc_oxford.pth?at=refs%2Fheads%2Fpublic_git) |
-|  |  | DCC (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pfe_stun_dropout/stun_minkloc_dcc.pth?at=refs%2Fheads%2Fpublic_git) |
-|  |  | Riverside (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pfe_stun_dropout/stun_minkloc_riverside.pth?at=refs%2Fheads%2Fpublic_git) |
-|  | Dropout | Oxford RobotCar | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pfe_stun_dropout/dropout_minkloc_oxford.pth?at=refs%2Fheads%2Fpublic_git) |
-|  |  | DCC (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pfe_stun_dropout/dropout_minkloc_dcc.pth?at=refs%2Fheads%2Fpublic_git) |
-|  |  | Riverside (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pfe_stun_dropout/dropout_minkloc_riverside.pth?at=refs%2Fheads%2Fpublic_git) |
-| TransLoc3D | Standard | Oxford RobotCar | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/transloc_oxford.pth?at=refs%2Fheads%2Fpublic_git) |
-|  |  | DCC (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/transloc_dcc.pth?at=refs%2Fheads%2Fpublic_git) |
-|  |  | Riverside (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/transloc_riverside.pth?at=refs%2Fheads%2Fpublic_git) |
-| PointNetVLAD | Standard | Oxford RobotCar | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pvlad_oxford.pth?at=public_git) |
-|  |  | DCC (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pvlad_dcc.pth?at=public_git) |
-|  |  | Riverside (MulRan) | [model](https://bitbucket.csiro.au/projects/SCUN/repos/uncertainty_placerecognition/browse/MinkLoc3D/weights/pvlad_riverside.pth?at=public_git) |
+|Architecture | Method | Trained on |
+|--|--|--|
+| MinkLoc3D | Standard | Oxford RobotCar |
+|  |  | DCC (MulRan) |
+|  |  | Riverside (MulRan) |
+|  | PFE | Oxford RobotCar | 
+|  |  | DCC (MulRan) | 
+|  |  | Riverside (MulRan) | 
+|  | STUN | Oxford RobotCar | 
+|  |  | DCC (MulRan) | 
+|  |  | Riverside (MulRan) |
+|  | Dropout | Oxford RobotCar | 
+|  |  | DCC (MulRan) | 
+|  |  | Riverside (MulRan) |
+| TransLoc3D | Standard | Oxford RobotCar | 
+|  |  | DCC (MulRan) | 
+|  |  | Riverside (MulRan) |
+| PointNetVLAD | Standard | Oxford RobotCar | 
+|  |  | DCC (MulRan) | 
+|  |  | Riverside (MulRan) | 
 
 Results are outlined in the paper [Uncertainty-Aware Lidar Place Recognition in Novel Environments](https://arxiv.org/pdf/2210.01361.pdf).
 

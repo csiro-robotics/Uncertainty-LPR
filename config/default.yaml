@@ -2,7 +2,7 @@ save_path: null
 save_results : null
 data:
   num_points: 4096
-  dataset_folder: /datasets/work/d61-eif/source/incrementalPointClouds
+  dataset_folder: <path>
   train_file: pickles/oxford/training_queries_oxford.pickle
   val_file: null
   aug_mode: 1
