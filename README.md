@@ -173,4 +173,4 @@ If you find this work useful, please consider citing:
 
 ## Acknowledgements 
 
-We would like to thank the authors of **MinkLoc3D** and **InCloud** for their codebases which have been used as starting points for this repository. We would also like to thank the authors of **PointNetVlad** and **TransLoc3D** for their implementations of point cloud place recognition, and the authors of **PFE**, **STUN**, **MC Dropout** and **Deep Ensembles** for their implementations of uncertainty estimation.
+We would like to thank the authors of **MinkLoc3D** and **InCloud** for their codebases which have been used as starting points for this repository. We would also like to thank the authors of **PointNetVlad** and **TransLoc3D** for their implementations of point cloud place recognition, and the authors of **PFE** and **STUN** for their implementations of uncertainty estimation.
